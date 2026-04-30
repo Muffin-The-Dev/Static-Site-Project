@@ -2,6 +2,8 @@ import unittest
 from textnode import TextNode, TextType
 from split_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link
 from extract_links import extract_markdown_images,extract_markdown_links
+from text_to_textnodes import text_to_textnodes
+from markdown_to_block import markdown_to_block,BlockType,block_to_block_type
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -81,6 +83,73 @@ class TestTextNode(unittest.TestCase):
     def test_split_link_1(self):
         split_link_list = split_nodes_link([TextNode("this is to see if we just pass with no link provided", TextType.TEXT)])
         self.assertEqual(split_link_list, [TextNode("this is to see if we just pass with no link provided", TextType.TEXT, None)])
+
+    def test_multi_conversion(self):
+        to_check = text_to_textnodes("This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
+        self.assertEqual(to_check,[
+    TextNode("This is ", TextType.TEXT),
+    TextNode("text", TextType.BOLD),
+    TextNode(" with an ", TextType.TEXT),
+    TextNode("italic", TextType.ITALIC),
+    TextNode(" word and a ", TextType.TEXT),
+    TextNode("code block", TextType.CODE),
+    TextNode(" and an ", TextType.TEXT),
+    TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+    TextNode(" and a ", TextType.TEXT),
+    TextNode("link", TextType.LINK, "https://boot.dev"),
+])
+    
+    def test_multi_conversion_simple(self):
+        to_check = text_to_textnodes("this part is a **bold** test")
+        self.assertEqual(to_check,[TextNode("this part is a ",TextType.TEXT), TextNode("bold",TextType.BOLD),TextNode(" test",TextType.TEXT)])
+
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_block(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+    def test_markdown_to_blocks_2(self):
+        md = """
+This is a fringe case test 
+
+There is nothing of value to read here
+
+
+"""
+        blocks = markdown_to_block(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is a fringe case test",
+                "There is nothing of value to read here"
+            ]
+        )
+
+    def test_block_to_block_type1(self):
+        compared_type = block_to_block_type("###### makes sense")
+        self.assertEqual(compared_type, BlockType.HEADING)
+    
+    def test_block_to_block_type_2(self):
+        compared_type= block_to_block_type("#######")
+        self.assertEqual(compared_type, BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_3(self):
+        compared_type = block_to_block_type("1. something\n2. something else\n3. another thing")
+        self.assertEqual(compared_type, BlockType.ORDERED_LIST)
 
 
 if __name__ == "__main__":

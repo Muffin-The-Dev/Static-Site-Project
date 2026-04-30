@@ -57,7 +57,7 @@ def split_nodes_link(old_nodes):
                 link_text = remaining_text.split(split_text, 1)
                 if link_text[0] != "":
                     new_nodes.append(TextNode(link_text[0],TextType.TEXT))
-                new_nodes.append(TextNode(link[0],TextType.IMAGE,image[1]))
+                new_nodes.append(TextNode(link[0],TextType.LINK,link[1]))
                 remaining_text = link_text[1]
                 if remaining_text!= "":
                     new_nodes.append(TextNode(remaining_text, TextType.TEXT))
