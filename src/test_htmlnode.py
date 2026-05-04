@@ -1,6 +1,7 @@
 import unittest
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextNode,TextType,text_node_to_html_node
+from extracttitle import extract_title
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -76,3 +77,17 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.value, "")
         self.assertEqual(html_node.props["src"], "https://example.com/pic.png")
         self.assertEqual(html_node.props["alt"], '')
+
+    def test_extract_title_1(self):
+        title = extract_title(
+    "Some intro\n"
+    "\n"
+    "# My Title\n"
+    "\n"
+    "Body text"
+)
+        self.assertEqual(title, "My Title")
+
+    def test_extract_title_no_h1(self):
+        with self.assertRaises(Exception):
+            extract_title("there is no \n ## title in here")
